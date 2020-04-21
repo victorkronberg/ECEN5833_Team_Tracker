@@ -45,7 +45,7 @@
 #include "gecko_ble_errors.h"
 #include "scheduler.h"
 #include "gecko_ble_server.h"
-#include "ble_timer.h"
+#include "ble_events.h"
 #include "bmp3.h"
 #include "pressure_sensor.h"
 
@@ -65,12 +65,13 @@
 #define PASSKEY_CONFIRM_MASK		(0x0040)
 #define PASSKEY_CONFIRM_POS			(6)
 #define BUTTON_EVENT_MASK			(0x0080)
-#define BUTTON_EVENT_POS			(7)
+#define BUTTON_EVENT_MASK_POS		(7)
 
 uint32_t event_bitmask;
 uint32_t interrupt_event_bitmask;
 
 struct imu_dev imu_dev;
+uint8_t sensors;
 struct bmp3_dev bmp_device;
 struct bmp3_data data;
 

@@ -8,7 +8,7 @@
 
 #include "pressure_sensor.h"
 
-int8_t set_normal_mode(struct bmp3_dev *dev)
+int8_t bmp_set_normal_mode(struct bmp3_dev *dev)
 {
     int8_t rslt;
     /* Used to select the settings user needs to change */
@@ -37,18 +37,16 @@ int8_t get_sensor_data(struct bmp3_dev *dev)
     int8_t rslt;
     /* Variable used to select the sensor component */
     uint8_t sensor_comp;
-    /* Variable used to store the compensated data */
-    struct bmp3_data data;
 
     /* Sensor component selection */
     sensor_comp = BMP3_PRESS | BMP3_TEMP;
     /* Temperature and Pressure data are read and stored in the bmp3_data instance */
-    rslt = bmp3_get_sensor_data(sensor_comp, &data, dev);
+    rslt = bmp3_get_sensor_data(sensor_comp, &pressure_data, dev);
 
     /* Print the temperature and pressure data */
     printLog("Temperature in deg celsius\t Pressure in Pascal\t\n");
 	/* for fixed point the compensated temperature and pressure output has a multiplication factor of 100 */
-    printLog("%lld\t\t %llu\t\t\n",data.temperature, data.pressure);
+    printLog("%lld\t\t %llu\t\t\n",pressure_data.temperature, pressure_data.pressure);
 
     return rslt;
 }

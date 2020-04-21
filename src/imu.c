@@ -610,17 +610,17 @@ eIMU_ERRORS icm20948_parse_sensor_data(struct imu_dev *dev, uint8_t *reg_data, u
 
 	if((sensors & (ACCELEROMETER | GYROSCOPE)))
 	{
-		msb = reg_data[X_AXIS_H] << 8;
-		lsb = reg_data[X_AXIS_L];
-		x_axis = msb|lsb;
+		msb = reg_data[X_AXIS_H];// << 8;
+		//lsb = reg_data[X_AXIS_L];
+		x_axis = msb;//|lsb;
 
-		msb = reg_data[Y_AXIS_H] << 8;
-		lsb = reg_data[Y_AXIS_L];
-		y_axis = msb|lsb;
+		msb = reg_data[Y_AXIS_H];// << 8;
+		//lsb = reg_data[Y_AXIS_L];
+		y_axis = msb;//|lsb;
 
-		msb = reg_data[Z_AXIS_H] << 8;
-		lsb = reg_data[Z_AXIS_L];
-		z_axis = msb|lsb;
+		msb = reg_data[Z_AXIS_H];// << 8;
+		//lsb = reg_data[Z_AXIS_L];
+		z_axis = msb;//|lsb;
 
 	}
 	else

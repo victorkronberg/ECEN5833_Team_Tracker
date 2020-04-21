@@ -57,10 +57,7 @@ void appMain(gecko_configuration_t *pconfig)
 	if(my_state_struct.event_bitmask != 0)
 	{
 		// Call scheduler
-		//my_scheduler(&my_state_struct);
-		printLog("Uh oh, need to implement scheduler\r\n");
-
-		delay_ms(500);
+		my_scheduler(&my_state_struct);
 
 	}
 	else

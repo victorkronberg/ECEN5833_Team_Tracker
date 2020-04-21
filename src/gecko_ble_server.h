@@ -58,6 +58,7 @@ struct indications
 	uint32_t confirmations;
 } pending;
 uint8_t htmTempBuffer[5]; /* Stores the temperature data in the Health Thermometer (HTM) format. */
+uint8_t pressureBuffer[8]; /* Stores the temperature data in the Health Thermometer (HTM) format. */
 uint8_t button_state;
 
 /**
@@ -105,7 +106,7 @@ void gecko_ble_send_temperature(uint32_t temperature);
  */
 void gecko_ble_send_button_state(void);
 
-void gecko_ble_send_accel_data(void);
+void gecko_ble_send_accel_data(uint8_t accel_pending_mask);
 
 void gecko_ble_send_altitude_data(void);
 

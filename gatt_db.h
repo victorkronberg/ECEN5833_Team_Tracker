@@ -20,8 +20,8 @@ extern const struct bg_gattdb_def bg_gattdb_data;
 #define gattdb_accel_y_axis                    14
 #define gattdb_accel_z_axis                    17
 #define gattdb_button_state                    20
-#define gattdb_altitude                        22
-#define gattdb_pressure                        25
+#define gattdb_pressure                        22
+#define gattdb_altitude                        25
 #define gattdb_device_name                     29
 #define gattdb_ota_control                     41
 #define gattdb_temperature_measurement         44

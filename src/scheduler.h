@@ -15,10 +15,13 @@
 #define ZERO_DELAY	(0)
 
 typedef enum states  {
-	STATE0_WAIT_FOR_BLE,
-	STATE1_AGMT_MEASUREMENT,
+	STATE0_SLEEP,
+	STATE1_ADVERTISING,
+	STATE2_CONNECTED_LP,
+	STATE3_TRANSMITTING,
 	MY_NUM_STATES
 } myState;
+
 
 typedef struct	StateStruct {
 	myState current_state;
@@ -49,6 +52,10 @@ void my_scheduler(myStateTypeDef *state_struct);
  * 							and set delay to wait for si7021 power-up. To be called in STATE0_WAIT_FOR_TIMER
  */
 void scheduler_power_up_si7021(void);
+
+void init_scheduler(void);
+
+void scheduler_toggle_advertising(bool advertising);
 
 /**
  * [scheduler_start_i2c_write]

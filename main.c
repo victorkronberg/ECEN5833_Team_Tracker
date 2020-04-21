@@ -39,6 +39,8 @@
 #define MAX_CONNECTIONS 4
 #endif
 
+//#define FEATURE_PA_INPUT_FROM_VBAT 1
+
 uint8_t bluetooth_stack_heap[DEFAULT_BLUETOOTH_HEAP(MAX_CONNECTIONS)];
 
 /* Bluetooth stack configuration parameters (see "UG136: Silicon Labs Bluetooth C Application Developer's Guide" for details on each parameter) */
@@ -81,7 +83,7 @@ int main(void)
 
 	eIMU_ERRORS rslt = 0;
 	uint8_t bmp_rslt = BMP3_OK;
-	uint8_t sensors;
+
 
 	bmp_device.dev_id = BMP388_DEV_ID;
 	bmp_device.read = &spi_read;
@@ -95,8 +97,6 @@ int main(void)
 	imu_dev.delay_ms = &delay_ms;
 	sensors = ACCELEROMETER | GYROSCOPE | THERMOMETER;
 
-
-	sensors = ACCELEROMETER | GYROSCOPE | THERMOMETER;
   /* Initialize device */
   initMcu();
   /* Initialize board */
@@ -109,12 +109,14 @@ int main(void)
   /* Initialize debug prints. Note: debug prints are off by default. See DEBUG_LEVEL in app.h */
    initLog();
 
+   init_scheduler();
+
   icm20948_init(&imu_dev);
 
   bmp_rslt = bmp3_init(&bmp_device);
   printLog("BMP initialization result: %d\r\n", bmp_rslt);
 
-  bmp_rslt = set_normal_mode(&bmp_device);
+  bmp_rslt = bmp_set_normal_mode(&bmp_device);
   printLog("BMP set normal mode result: %d\r\n", bmp_rslt);
   /* Initialize application */
   //initApp();

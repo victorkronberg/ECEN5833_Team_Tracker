@@ -121,7 +121,7 @@ static void initMcu_clocks(void)
 #endif//_EMU_CTRL_EM23VSCALE_MASK
 
   // HFRCO not needed when using HFXO
-  CMU_OscillatorEnable(cmuOsc_HFRCO, false, false);
+  //CMU_OscillatorEnable(cmuOsc_HFRCO, false, false);
 
   // Enabling HFBUSCLKLE clock for LE peripherals
   CMU_ClockEnable(cmuClock_HFLE, true);
@@ -144,7 +144,10 @@ static void initMcu_clocks(void)
   CMU_LFXOInit(&lfxoInit);
   // Set system LFXO frequency
   SystemLFXOClockSet(BSP_CLK_LFXO_FREQ);
-
+  // Set LFXO if selected as LFCLK
+  CMU_ClockSelectSet(cmuClock_LFA, cmuSelect_LFXO);
+  CMU_ClockSelectSet(cmuClock_LFB, cmuSelect_LFXO);
+  CMU_ClockSelectSet(cmuClock_LFE, cmuSelect_LFXO);
 
 }
 

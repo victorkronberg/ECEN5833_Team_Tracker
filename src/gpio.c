@@ -29,15 +29,15 @@ void gpioInit()
 	//GPIO_PinModeSet(LED1_port, LED1_pin, gpioModePushPull, false);
 
 	// Set PD0 button as input with no filter
-	//GPIO_PinModeSet(PD0_BUTTON_PORT, PD0_BUTTON_PIN, gpioModeInputPullFilter, true);
+	GPIO_PinModeSet(PD0_BUTTON_PORT, PD0_BUTTON_PIN, gpioModeInputPullFilter, true);
 
 	// Disable GPIO interrupts prior to configuring pin interrupts
-	//GPIO_IntDisable(PD0_BUTTON_PIN);
+	GPIO_IntDisable(PD0_BUTTON_PIN);
 	// Configure input interrupt for PD0 button on rising/falling edge - enable interrupts
-	//GPIO_ExtIntConfig(PD0_BUTTON_PORT,PD0_BUTTON_PIN,PD0_BUTTON_PIN,true,true,true);
-	//NVIC_EnableIRQ(GPIO_EVEN_IRQn);
+	GPIO_ExtIntConfig(PD0_BUTTON_PORT,PD0_BUTTON_PIN,PD0_BUTTON_PIN,true,true,true);
+	NVIC_EnableIRQ(GPIO_EVEN_IRQn);
 
-	//button_state = 0x00;
+	button_state = 0x00;
 }
 
 void gpioLed0SetOn()
@@ -80,7 +80,7 @@ void gpioSetDisplayExtcomin(bool high)
 //	return 0;//button_state;
 //}
 
-/*
+
 void GPIO_EVEN_IRQHandler(void)
 {
 	uint32_t gpio_pin_state;
@@ -95,31 +95,23 @@ void GPIO_EVEN_IRQHandler(void)
 	// Set shift pin state so it is 0 or 1
 	gpio_pin_state = ((gpio_pin_state & PD0_BUTTON_PIN_MASK) >> PD0_BUTTON_PIN);
 
-	LOG_INFO("GPIO Pin state is %d",gpio_pin_state);
+	printLog("GPIO Pin state is %d\r\n",gpio_pin_state);
 
 	// If 0, button is pressed and GPIO pin is grounded
 	if(gpio_pin_state == 0)
 	{
 		gpioLed0SetOn();
-
-		if(server_security_state == pairingConfirmKey)
-		{
-			gecko_external_signal(PASSKEY_CONFIRM_MASK);
-		}
 		button_state = 0x01;
 	}
 	else
 	{
 		gpioLed0SetOff();
 		button_state = 0x00;
+
+		// Start advertising
+		//gecko_external_signal(BUTTON_EVENT_MASK);
 	}
 
-
-	// Update characteristic if bonded
-	if(server_security_state == bonded)
-	{
-		gecko_external_signal(BUTTON_EVENT_MASK);
-	}
 
 
 	// Toggle LED0
@@ -128,4 +120,4 @@ void GPIO_EVEN_IRQHandler(void)
 	__enable_irq();
 
 }
-*/
+

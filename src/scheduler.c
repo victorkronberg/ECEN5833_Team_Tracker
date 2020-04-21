@@ -10,54 +10,84 @@
 
 #include "scheduler.h"
 
-// void my_scheduler(myStateTypeDef *state_struct)
-// {
-//
-// 	// Handle events not tied to a given state first
-//
-// 	// Check for RSSI check event - does not impact state
-// 	if( ((state_struct->event_bitmask & ONE_HZ_EVENT_MASK) >> ONE_HZ_EVENT_MASK_POS) == 1 )
-// 	{
-// 		__disable_irq();
-// 		// Clear event bitmask
-// 		state_struct->event_bitmask &= ~ONE_HZ_EVENT_MASK;
-// 		__enable_irq();
-//
-// 		scheduler_one_hz_event_handler();
-//
-// 	}
-//
-//
-// 	// Handle state-driven events
-//
-// 	switch (state_struct->current_state)
-// 	{
-// 		case STATE0_WAIT_FOR_BLE:
-// 			if( ((state_struct->event_bitmask & BLE_EVENT_MASK) >> BLE_EVENT_MASK_POS) == 1 )
-// 			{
-// 				__disable_irq();
-// 				// Clear event bitmask
-// 				state_struct->event_bitmask &= ~BLE_EVENT_MASK;
-// 				__enable_irq();
-//
-// 				// Enter sensor measurement loop
-// 				scheduler_enter_temperature_polling_loop();
-//
-// 				// Set next state
-// 				state_struct->next_state = STATE1_WAIT_FOR_TIMER;
-// 			}
-// 			break;
-// 		default:
-// 			break;
-// 	}
-//
-// 	if(state_struct->current_state != state_struct->next_state)
-// 	{
-// 		//LOG_INFO("State transitioned from state %d to %d",state_struct->current_state,state_struct->next_state);
-// 		state_struct->current_state = state_struct->next_state;
-// 	}
-//
-// }
+void my_scheduler(myStateTypeDef *state_struct)
+{
+
+	// Handle state-driven events
+	printLog("State event\r\n");
+
+	switch (state_struct->current_state)
+	{
+		case STATE0_SLEEP:
+			if( ((state_struct->event_bitmask & BUTTON_EVENT_MASK) >> BUTTON_EVENT_MASK_POS) == 1 )
+			{
+				__disable_irq();
+				// Clear event bitmask
+				state_struct->event_bitmask &= ~BUTTON_EVENT_MASK;
+				__enable_irq();
+
+				//Enable advertising
+				scheduler_toggle_advertising(true);
+
+				// Set next state
+				state_struct->next_state = STATE1_ADVERTISING;
+			}
+			break;
+		case STATE1_ADVERTISING:
+			if( ((state_struct->event_bitmask & BUTTON_EVENT_MASK) >> BUTTON_EVENT_MASK_POS) == 1 )
+			{
+				__disable_irq();
+				// Clear event bitmask
+				state_struct->event_bitmask &= ~BUTTON_EVENT_MASK;
+				__enable_irq();
+
+				//Disable advertising
+				scheduler_toggle_advertising(false);
+
+				// Set next state
+				state_struct->next_state = STATE0_SLEEP;
+			}
+			break;
+		default:
+			break;
+	}
+
+	if(state_struct->current_state != state_struct->next_state)
+	{
+		//LOG_INFO("State transitioned from state %d to %d",state_struct->current_state,state_struct->next_state);
+		state_struct->current_state = state_struct->next_state;
+	}
+
+}
+
+
+void init_scheduler(void)
+{
+	my_state_struct.current_state = STATE0_SLEEP;
+	my_state_struct.next_state = STATE0_SLEEP;
+	my_state_struct.event_bitmask = 0;
+}
+
+void scheduler_toggle_advertising(bool advertising)
+{
+	if(advertising)
+	{
+		printLog("Starting advertisement\r\n");
+		/* Set Advertising parameters */
+		BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_set_advertise_timing(0, ADVERTISE_INTERVAL_250MS, ADVERTISE_INTERVAL_250MS, 0, 0));
+		/* Start advertising */
+		BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
+	}
+	else
+	{
+		printLog("Halting advertisement\r\n");
+		/* Send one advertisement and allow timeout */
+		/* Set Advertising parameters */
+		BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_set_advertise_timing(0, ADVERTISE_INTERVAL_250MS, ADVERTISE_INTERVAL_250MS, 1, 1));
+		/* Start advertising */
+		BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
+	}
+}
 
 /*
 
@@ -85,5 +115,5 @@ void scheduler_exit_temperature_polling_loop(myStateTypeDef *state_struct)
 	state_struct->next_state = STATE0_WAIT_FOR_BLE;
 }
 
-
 */
+

@@ -9,7 +9,7 @@
 #ifndef SRC_GPIO_H_
 #define SRC_GPIO_H_
 #include <stdbool.h>
-//#include "main.h"
+#include "main.h"
 
 #define pin15	(15)
 #define pin5	(5)
@@ -19,9 +19,9 @@
 #define DISPLAY_EXTCOMIN_PORT	(gpioPortD)
 #define DISPLAY_EXTCOMIN_PIN	(13)
 
-#define PD0_BUTTON_PORT			(gpioPortF)
-#define PD0_BUTTON_PIN			(6)
-#define PD0_BUTTON_PIN_MASK		(0x40)
+#define PD0_BUTTON_PORT			(gpioPortA)
+#define PD0_BUTTON_PIN			(0)
+#define PD0_BUTTON_PIN_MASK		(0x01)
 
 
 /**

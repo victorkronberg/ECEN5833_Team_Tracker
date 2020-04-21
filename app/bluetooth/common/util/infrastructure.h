@@ -33,6 +33,11 @@
 #define UINT32_TO_BITSTREAM(p, n)     { *(p)++ = (uint8_t)(n); *(p)++ = (uint8_t)((n) >> 8); \
                                         *(p)++ = (uint8_t)((n) >> 16); *(p)++ = (uint8_t)((n) >> 24); }
 
+#define UINT64_TO_BITSTREAM(p, n)     { *(p)++ = (uint8_t)(n); *(p)++ = (uint8_t)((n) >> 8); \
+                                        *(p)++ = (uint8_t)((n) >> 16); *(p)++ = (uint8_t)((n) >> 24); \
+										*(p)++ = (uint8_t)((n) >> 32); *(p)++ = (uint8_t)((n) >> 40); \
+                                        *(p)++ = (uint8_t)((n) >> 48); *(p)++ = (uint8_t)((n) >> 56); }
+
 #define UINT16_TO_BYTE0(n)            ((uint8_t) (n))
 #define UINT16_TO_BYTE1(n)            ((uint8_t) ((n) >> 8))
 
