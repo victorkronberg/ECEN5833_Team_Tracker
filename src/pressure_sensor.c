@@ -20,7 +20,7 @@ int8_t bmp_set_normal_mode(struct bmp3_dev *dev)
     /* Select the output data rate and oversampling settings for pressure and temperature */
     dev->settings.odr_filter.press_os = BMP3_NO_OVERSAMPLING;
     dev->settings.odr_filter.temp_os = BMP3_NO_OVERSAMPLING;
-    dev->settings.odr_filter.odr = BMP3_ODR_200_HZ;
+    dev->settings.odr_filter.odr = BMP3_ODR_25_HZ;
     /* Assign the settings which needs to be set in the sensor */
     settings_sel = BMP3_PRESS_EN_SEL | BMP3_TEMP_EN_SEL | BMP3_PRESS_OS_SEL | BMP3_TEMP_OS_SEL | BMP3_ODR_SEL;
     rslt = bmp3_set_sensor_settings(settings_sel, dev);
@@ -30,6 +30,26 @@ int8_t bmp_set_normal_mode(struct bmp3_dev *dev)
     rslt = bmp3_set_op_mode(dev);
 
     return rslt;
+}
+
+int8_t bmp_wake_mode(struct bmp3_dev *dev)
+{
+	int8_t rslt;
+	/* Set the power mode to normal mode */
+	dev->settings.op_mode = BMP3_NORMAL_MODE;
+	rslt = bmp3_set_op_mode(dev);
+
+	return rslt;
+}
+
+int8_t bmp_sleep_mode(struct bmp3_dev *dev)
+{
+	int8_t rslt;
+	/* Set the power mode to sleep mode */
+	dev->settings.op_mode = BMP3_SLEEP_MODE;
+	rslt = bmp3_set_op_mode(dev);
+
+	return rslt;
 }
 
 int8_t get_sensor_data(struct bmp3_dev *dev)

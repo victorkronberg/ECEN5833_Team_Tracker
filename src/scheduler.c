@@ -19,30 +19,36 @@ void my_scheduler(myStateTypeDef *state_struct)
 	switch (state_struct->current_state)
 	{
 		case STATE0_SLEEP:
-			if( ((state_struct->event_bitmask & BUTTON_EVENT_MASK) >> BUTTON_EVENT_MASK_POS) == 1 )
+			if( ((state_struct->event_bitmask & FLIGHT_EVENT_MASK) >> FLIGHT_EVENT_MASK_POS) == 1 )
 			{
-				__disable_irq();
-				// Clear event bitmask
-				state_struct->event_bitmask &= ~BUTTON_EVENT_MASK;
-				__enable_irq();
-
-				//Enable advertising
-				scheduler_toggle_advertising(true);
-
+				printLog("Entering flight recorder\r\n");
+				scheduler_enter_fight_mode(state_struct);
 				// Set next state
-				state_struct->next_state = STATE1_ADVERTISING;
+				state_struct->next_state = STATE3_FLIGHT_RECORDER;
+			}
+			else if( ((state_struct->event_bitmask & PEDOMETER_EVENT_MASK) >> PEDOMETER_EVENT_MASK_POS) == 1 )
+			{
+				printLog("Entering pedometer\r\n");
+				scheduler_enter_pedometer_mode(state_struct);
+				// Set next state
+				state_struct->next_state = STATE2_PEDOMETER;
 			}
 			break;
-		case STATE1_ADVERTISING:
-			if( ((state_struct->event_bitmask & BUTTON_EVENT_MASK) >> BUTTON_EVENT_MASK_POS) == 1 )
+		case STATE2_PEDOMETER:
+			if( ((state_struct->event_bitmask & EXIT_EVENT_MASK) >> EXIT_EVENT_MASK_POS) == 1 )
 			{
-				__disable_irq();
-				// Clear event bitmask
-				state_struct->event_bitmask &= ~BUTTON_EVENT_MASK;
-				__enable_irq();
+				printLog("Exiting pedometer\r\n");
+				scheduler_exit_pedometer_mode(state_struct);
 
-				//Disable advertising
-				scheduler_toggle_advertising(false);
+				// Set next state
+				state_struct->next_state = STATE0_SLEEP;
+			}
+			break;
+		case STATE3_FLIGHT_RECORDER:
+			if( ((state_struct->event_bitmask & EXIT_EVENT_MASK) >> EXIT_EVENT_MASK_POS) == 1 )
+			{
+				printLog("Exiting flight recorder\r\n");
+				scheduler_exit_flight_mode(state_struct);
 
 				// Set next state
 				state_struct->next_state = STATE0_SLEEP;
@@ -50,6 +56,15 @@ void my_scheduler(myStateTypeDef *state_struct)
 			break;
 		default:
 			break;
+	}
+
+	if(state_struct->event_bitmask != 0)
+	{
+		printLog("Not all events handled, event %d cleared\r\n", state_struct->event_bitmask);
+		__disable_irq();
+		// Clear event bitmask
+		state_struct->event_bitmask = 0;
+		__enable_irq();
 	}
 
 	if(state_struct->current_state != state_struct->next_state)
@@ -87,6 +102,93 @@ void scheduler_toggle_advertising(bool advertising)
 		/* Start advertising */
 		BTSTACK_CHECK_RESPONSE(gecko_cmd_le_gap_start_advertising(0, le_gap_general_discoverable, le_gap_connectable_scannable));
 	}
+}
+
+void scheduler_enter_fight_mode(myStateTypeDef *state_struct)
+{
+	__disable_irq();
+	// Clear event bitmask
+	state_struct->event_bitmask &= ~FLIGHT_EVENT_MASK;
+	__enable_irq();
+	// Wake sensors
+	icm20948_sleep(&imu_dev,false);
+	bmp_wake_mode(&bmp_device);
+	// Delay while sensors come online (if needed)
+
+	// Start repeating timer
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(500),
+			  												TIMER_ID_FLIGHT_MODE,
+			  												0));
+
+	// Set LED timer for 9 blinks
+	led_counter = 9;
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(450),
+															TIMER_ID_LED_INDICATOR,
+															1));
+}
+
+void scheduler_enter_pedometer_mode(myStateTypeDef *state_struct)
+{
+	__disable_irq();
+	// Clear event bitmask
+	state_struct->event_bitmask &= ~PEDOMETER_EVENT_MASK;
+	__enable_irq();
+	// Wake sensors
+	icm20948_sleep(&imu_dev,false);
+	bmp_wake_mode(&bmp_device);
+	// Delay while sensors come online (if needed)
+
+	// Start repeating timer
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(500),
+															TIMER_ID_PEDOMETER_MODE,
+															0));
+	// Set LED timer for 5 blinks
+	led_counter = 5;
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(450),
+															TIMER_ID_LED_INDICATOR,
+															1));
+}
+
+
+void scheduler_exit_flight_mode(myStateTypeDef *state_struct)
+{
+	__disable_irq();
+	// Clear event bitmask
+	state_struct->event_bitmask &= ~EXIT_EVENT_MASK;
+	__enable_irq();
+	// Sleep sensors
+	icm20948_sleep(&imu_dev,true);
+	bmp_sleep_mode(&bmp_device);
+	// End repeating timer
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(500),
+															TIMER_ID_FLIGHT_MODE,
+															1));
+
+	// Set LED timer for 7 blinks
+	led_counter = 7;
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(450),
+															TIMER_ID_LED_INDICATOR,
+															1));
+}
+
+void scheduler_exit_pedometer_mode(myStateTypeDef *state_struct)
+{
+	__disable_irq();
+	// Clear event bitmask
+	state_struct->event_bitmask &= ~EXIT_EVENT_MASK;
+	__enable_irq();
+	// Sleep sensors
+	icm20948_sleep(&imu_dev,true);
+	bmp_sleep_mode(&bmp_device);
+	// End repeating timer
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(500),
+															TIMER_ID_PEDOMETER_MODE,
+															1));
+	// Set LED timer for 3 blinks
+	led_counter = 3;
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(450),
+															TIMER_ID_LED_INDICATOR,
+															1));
 }
 
 /*

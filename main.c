@@ -143,6 +143,19 @@ int main(void)
   printLog("Gyro data - X: %d  Y: %d  Z: %d\n\r",imu_dev.sensor_data.gyroscope_x,imu_dev.sensor_data.gyroscope_y,imu_dev.sensor_data.gyroscope_y);
   printLog("Temperature: %d C\n\r",imu_dev.sensor_data.temperature);
 
+  printLog("Sleep devices\r\n");
+
+  rslt = icm20948_sleep(&imu_dev,true);
+  if(rslt != eIMUErrorIMUok)
+  {
+	  printLog("Error sleeping IMU\r\n");
+  }
+
+  bmp_sleep_mode(&bmp_device);
+
+
+
+
 
   /* Start application */
   appMain(&config);

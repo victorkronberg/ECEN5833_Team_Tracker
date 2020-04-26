@@ -12,15 +12,61 @@ bool ble_timer_events(struct gecko_cmd_packet* evt)
 {
 	switch (evt->data.evt_hardware_soft_timer.handle)
 	{
-		case TIMER_ID_TEMP_MEASUREMENT:
-			printLog("Temp timer event\r\n");
-			gecko_ble_send_temperature(temp_value);
-			temp_value++;
+		case TIMER_ID_FLIGHT_MODE:
+			printLog("Flight timer event\r\n");
+			if(my_state_struct.current_state == STATE0_SLEEP)
+			{
+				printLog("Flight ended, going to sleep\r\n");
+				// Clear pending indications and return to sleep
+				__disable_irq();
+				pending.confirmations &= ~(HTM_PENDING_MASK|ACCEL_X_PENDING_MASK);
+				__enable_irq();
+			}
+			else
+			{
+				gecko_ble_send_temperature(temp_value);
+			}
 			break;
-		case TIMER_ID_STATE3_SEND_AGMT:
-			printLog("Accel timer event\r\n");
-			gecko_ble_send_accel_data(ACCEL_X_PENDING_MASK);
-			imu_dev.sensor_data.accelerometer_x++;
+		case TIMER_ID_PEDOMETER_MODE:
+			printLog("Pedometer timer event\r\n");
+			if(my_state_struct.current_state == STATE0_SLEEP)
+			{
+				printLog("Pedometer ended, going to sleep\r\n");
+				// Clear pending indications and return to sleep
+				__disable_irq();
+				pending.confirmations &= ~(HTM_PENDING_MASK|ACCEL_X_PENDING_MASK);
+				__enable_irq();
+			}
+			else
+			{
+				gecko_ble_send_accel_data(ACCEL_X_PENDING_MASK);
+			}
+			break;
+		case TIMER_ID_LED_INDICATOR:
+
+			if(led_counter % 2 == 0)
+			{
+				gpioLed0SetOn();
+			}
+			else
+			{
+				gpioLed0SetOff();
+			}
+
+			if(led_counter > 1)
+			{
+				BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(450),
+																			TIMER_ID_LED_INDICATOR,
+							  												1));
+			}
+			else
+			{
+				// Make sure LED is off
+				gpioLed0SetOff();
+			}
+
+			led_counter--;
+
 			break;
 
 		default:
@@ -42,24 +88,22 @@ bool ble_characteristic_events(struct gecko_cmd_packet* evt)
 	  if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == 0x02)
 	  {
 		  __disable_irq();
-		  // Send temp in 500 ms
-		  BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(50000,
-														   TIMER_ID_TEMP_MEASUREMENT,
-														   1));
+		  // Set flag to enter pedometer mode
+		  my_state_struct.event_bitmask |= FLIGHT_EVENT_MASK;
+
 		  __enable_irq();
-		  printLog("Temp timer has been set\r\n");
+		  printLog("Temp timer has been set - entering flight mode\r\n");
 
 	  } else if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == 0x00)
 	  {
 
 		  __disable_irq();
-		// Disable temperature polling
-		  //my_state_struct.event_bitmask |= EXIT_EVENT_MASK;
-		  __disable_irq();
-			pending.confirmations &= ~(HTM_PENDING_MASK|ACCEL_X_PENDING_MASK);
-			__enable_irq();
-		  printLog("Exit event\r\n");
+		  // Disable temperature polling
+		  my_state_struct.event_bitmask |= EXIT_EVENT_MASK;
+		  pending.confirmations &= ~(HTM_PENDING_MASK|ACCEL_X_PENDING_MASK);
 		  __enable_irq();
+
+		  printLog("Temp exit event - exiting flight mode\r\n");
 	  }
 	}
 
@@ -69,25 +113,23 @@ bool ble_characteristic_events(struct gecko_cmd_packet* evt)
 	{
 	  if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == 0x02)
 	  {
+
 		  __disable_irq();
-		  // Send temp in 500 ms
-		  BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(50000,
-				  	  	  	  	  	  	  	  	  	  	  	  TIMER_ID_STATE3_SEND_AGMT,
-															  1));
+		  // Set flag to enter pedometer mode
+		  my_state_struct.event_bitmask |= PEDOMETER_EVENT_MASK;
+
 		  __enable_irq();
-		  printLog("Accel timer has been set\r\n");
+		  printLog("Accel timer has been set - entering pedometer mode\r\n");
 
 	  } else if (evt->data.evt_gatt_server_characteristic_status.client_config_flags == 0x00)
 	  {
 
 		  __disable_irq();
 		// Disable temperature polling
-		  //my_state_struct.event_bitmask |= EXIT_EVENT_MASK;
-		  __disable_irq();
-		  pending.confirmations &= ~(HTM_PENDING_MASK|ACCEL_X_PENDING_MASK);
+		  my_state_struct.event_bitmask |= EXIT_EVENT_MASK;
 		  __enable_irq();
-		  printLog("Exit event\r\n");
-		  __enable_irq();
+
+		  printLog("Pedometer exit event\r\n");
 	  }
 	}
 
@@ -103,9 +145,9 @@ bool ble_characteristic_events(struct gecko_cmd_packet* evt)
 		__enable_irq();
 		printLog("Accel confirmation\r\n");
 
-		BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(50000,
-																	TIMER_ID_STATE3_SEND_AGMT,
-																	1));
+		//BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(50000,
+		//															TIMER_ID_STATE3_SEND_AGMT,
+		//															1));
 
 		if(((pending.indications & HTM_PENDING_MASK) >> HTM_PENDING_POS) == 1)
 		{
@@ -121,9 +163,9 @@ bool ble_characteristic_events(struct gecko_cmd_packet* evt)
 		pending.confirmations &= ~HTM_PENDING_MASK;
 		__enable_irq();
 		printLog("Temp confirmation\r\n");
-		BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(50000,
-																   TIMER_ID_TEMP_MEASUREMENT,
-																   1));
+		//BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(50000,
+		//														   TIMER_ID_TEMP_MEASUREMENT,
+		//														   1));
 
 		// Check for pending indications
 		if(((pending.indications & ACCEL_X_PENDING_MASK) >> ACCEL_X_PENDING_POS) == 1)

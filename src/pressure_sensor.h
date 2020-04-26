@@ -11,6 +11,8 @@
 #include "main.h"
 
 int8_t bmp_set_normal_mode(struct bmp3_dev *dev);
+int8_t bmp_wake_mode(struct bmp3_dev *dev);
+int8_t bmp_sleep_mode(struct bmp3_dev *dev);
 int8_t get_sensor_data(struct bmp3_dev *dev);
 
 /* Variable used to store the compensated data */
