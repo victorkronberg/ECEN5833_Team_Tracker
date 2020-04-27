@@ -296,6 +296,8 @@ void gecko_ble_send_accel_data(uint8_t accel_pending_mask)
 	if(pending.confirmations == 0)
 	{
 		icm20948_get_agmt(&imu_dev,sensors);
+
+		GPIO_PinOutClear(CS_PORT,BMP388_DEV_ID);
 		BTSTACK_CHECK_RESPONSE(gecko_cmd_gatt_server_send_characteristic_notification(0xFF,gattdb_accel_x_axis,1,&imu_dev.sensor_data.accelerometer_x));
 		BTSTACK_CHECK_RESPONSE(gecko_cmd_gatt_server_send_characteristic_notification(0xFF,gattdb_accel_y_axis,1,&imu_dev.sensor_data.accelerometer_y));
 		BTSTACK_CHECK_RESPONSE(gecko_cmd_gatt_server_send_characteristic_notification(0xFF,gattdb_accel_z_axis,1,&imu_dev.sensor_data.accelerometer_z));
@@ -317,9 +319,9 @@ void gecko_ble_send_altitude_data(void)
 	int32_t pressure;   /* Stores the temperature data read from the sensor in the correct format */
 	uint8_t *p = pressureBuffer; /* Pointer to HTM temperature buffer needed for converting values to bitstream. */
 
-	get_sensor_data(&bmp_device);
+	//get_sensor_data(&bmp_device);
 
-	pressure = (int32_t) pressure_data.pressure/10;
+	pressure = 10000; //(int32_t) pressure_data.pressure/10;
 
 
 	/* Convert temperature to bitstream and place it in the HTM temperature data buffer (htmTempBuffer) */
@@ -332,6 +334,7 @@ void gecko_ble_send_altitude_data(void)
 
 		BTSTACK_CHECK_RESPONSE(gecko_cmd_gatt_server_send_characteristic_notification(0xFF, gattdb_pressure,
 				8, pressureBuffer));
+		GPIO_PinOutSet(CS_PORT,BMP388_DEV_ID);
 		printLog("Pressure sent\r\n");
 
 }
