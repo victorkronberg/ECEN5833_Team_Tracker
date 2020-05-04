@@ -59,6 +59,12 @@ struct indications
 } pending;
 uint8_t htmTempBuffer[5]; /* Stores the temperature data in the Health Thermometer (HTM) format. */
 uint8_t pressureBuffer[8]; /* Stores the temperature data in the Health Thermometer (HTM) format. */
+uint8_t x_buffer[2];
+uint8_t y_buffer[2];
+uint8_t z_buffer[2];
+uint8_t steps_buffer[4];
+uint8_t elevation_buffer[4];
+uint8_t altitude_buffer[2];
 uint8_t button_state;
 
 /**
@@ -97,6 +103,8 @@ bool gecko_update(struct gecko_cmd_packet* evt);
  * @param        temperature [Uint32_t temperature in milli-degrees C]
  */
 void gecko_ble_send_temperature(uint32_t temperature);
+
+void gecko_ble_send_steps(void);
 
 /**
  * [gecko_ble_send_button_state]

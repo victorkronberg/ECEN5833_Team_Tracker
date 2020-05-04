@@ -18,12 +18,13 @@ extern const struct bg_gattdb_def bg_gattdb_data;
 #define gattdb_client_support_features          8
 #define gattdb_device_name                     11
 #define gattdb_ota_control                     23
-#define gattdb_altitude                        26
-#define gattdb_temperature_measurement         29
-#define gattdb_accel_x_axis                    32
+#define gattdb_steps                           26
+#define gattdb_pressure                        29
+#define gattdb_accel_z_axis                    32
 #define gattdb_accel_y_axis                    35
-#define gattdb_accel_z_axis                    38
-#define gattdb_button_state                    41
-#define gattdb_pressure                        43
+#define gattdb_accel_x_axis                    38
+#define gattdb_temperature_measurement         41
+#define gattdb_elevation                       44
+#define gattdb_altitude                        47
 
 #endif

@@ -18,11 +18,12 @@ int8_t bmp_set_normal_mode(struct bmp3_dev *dev)
     dev->settings.press_en = BMP3_ENABLE;
     dev->settings.temp_en = BMP3_ENABLE;
     /* Select the output data rate and oversampling settings for pressure and temperature */
-    dev->settings.odr_filter.press_os = BMP3_NO_OVERSAMPLING;
+    dev->settings.odr_filter.press_os = BMP3_OVERSAMPLING_4X;
     dev->settings.odr_filter.temp_os = BMP3_NO_OVERSAMPLING;
     dev->settings.odr_filter.odr = BMP3_ODR_25_HZ;
+    dev->settings.odr_filter.iir_filter = BMP3_IIR_FILTER_COEFF_7;
     /* Assign the settings which needs to be set in the sensor */
-    settings_sel = BMP3_PRESS_EN_SEL | BMP3_TEMP_EN_SEL | BMP3_PRESS_OS_SEL | BMP3_TEMP_OS_SEL | BMP3_ODR_SEL;
+    settings_sel = BMP3_PRESS_EN_SEL | BMP3_TEMP_EN_SEL | BMP3_PRESS_OS_SEL | BMP3_TEMP_OS_SEL | BMP3_ODR_SEL | BMP3_IIR_FILTER_SEL;
     rslt = bmp3_set_sensor_settings(settings_sel, dev);
 
     /* Set the power mode to normal mode */
@@ -64,9 +65,9 @@ int8_t get_sensor_data(struct bmp3_dev *dev)
     rslt = bmp3_get_sensor_data(sensor_comp, &pressure_data, dev);
 
     /* Print the temperature and pressure data */
-    printLog("Temperature in deg celsius\t Pressure in Pascal\t\n");
+    //printLog("Temperature in deg celsius\t Pressure in Pascal\t\n");
 	/* for fixed point the compensated temperature and pressure output has a multiplication factor of 100 */
-    printLog("%lld\t\t %llu\t\t\n",pressure_data.temperature, pressure_data.pressure);
+    //printLog("%lld\t\t %llu\t\t\n",pressure_data.temperature, pressure_data.pressure);
 
     return rslt;
 }

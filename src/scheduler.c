@@ -115,16 +115,20 @@ void scheduler_enter_fight_mode(myStateTypeDef *state_struct)
 	bmp_wake_mode(&bmp_device);
 	// Delay while sensors come online (if needed)
 
+	delay_ms(35);
+
+	tracker_enter_flight_mode();
+
 	// Start repeating timer
 	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(500),
 			  												TIMER_ID_FLIGHT_MODE,
 			  												0));
 
-	// Set LED timer for 9 blinks
-	led_counter = 9;
-	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(450),
+	// Set LED timer for 8 fast blinks
+	led_counter = 15;
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(100),
 															TIMER_ID_LED_INDICATOR,
-															1));
+															0));
 }
 
 void scheduler_enter_pedometer_mode(myStateTypeDef *state_struct)
@@ -132,21 +136,31 @@ void scheduler_enter_pedometer_mode(myStateTypeDef *state_struct)
 	__disable_irq();
 	// Clear event bitmask
 	state_struct->event_bitmask &= ~PEDOMETER_EVENT_MASK;
+	position_data.steps_taken = 0;
 	__enable_irq();
 	// Wake sensors
 	icm20948_sleep(&imu_dev,false);
 	bmp_wake_mode(&bmp_device);
 	// Delay while sensors come online (if needed)
+	delay_ms(35);
+
+	tracker_enter_pedometer_mode();
 
 	// Start repeating timer
 	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(500),
 															TIMER_ID_PEDOMETER_MODE,
 															0));
-	// Set LED timer for 5 blinks
-	led_counter = 5;
-	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(450),
+
+	// Start 50Hz timer for pedometer data
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(50),
+															TIMER_ID_PEDOMETER_50HZ,
+															0));
+
+	// Set LED timer for 4 fast blinks
+	led_counter = 7;
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(100),
 															TIMER_ID_LED_INDICATOR,
-															1));
+															0));
 }
 
 
@@ -164,11 +178,11 @@ void scheduler_exit_flight_mode(myStateTypeDef *state_struct)
 															TIMER_ID_FLIGHT_MODE,
 															1));
 
-	// Set LED timer for 7 blinks
+	// Set LED timer for 4 slow blinks
 	led_counter = 7;
 	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(450),
 															TIMER_ID_LED_INDICATOR,
-															1));
+															0));
 }
 
 void scheduler_exit_pedometer_mode(myStateTypeDef *state_struct)
@@ -184,11 +198,15 @@ void scheduler_exit_pedometer_mode(myStateTypeDef *state_struct)
 	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(500),
 															TIMER_ID_PEDOMETER_MODE,
 															1));
-	// Set LED timer for 3 blinks
+	// End 50Hz timer for pedometer data
+	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(50),
+															TIMER_ID_PEDOMETER_50HZ,
+															1));
+	// Set LED timer for 2 slow blinks
 	led_counter = 3;
 	BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(450),
 															TIMER_ID_LED_INDICATOR,
-															1));
+															0));
 }
 
 /*

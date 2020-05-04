@@ -40,11 +40,24 @@ bool ble_timer_events(struct gecko_cmd_packet* evt)
 			else
 			{
 				gecko_ble_send_accel_data(ACCEL_X_PENDING_MASK);
+				gecko_ble_send_steps();
+			}
+			break;
+		case TIMER_ID_PEDOMETER_50HZ:
+			icm20948_get_agmt(&imu_dev,ACCELEROMETER);
+			z_axis_data[pedometer_counter] = (float) imu_dev.sensor_data.accelerometer_z;
+			pedometer_counter++;
+			if(pedometer_counter >= SAMPLE_LENGTH)
+			{
+				printLog("pedometer_overflow\r\n");
+				uint32_t steps_since_last_overflow = tracker_thresholding(z_axis_data,z_axis_filtered,7,3.0,0.5);
+				position_data.steps_taken += steps_since_last_overflow;
+				pedometer_counter = 0;
 			}
 			break;
 		case TIMER_ID_LED_INDICATOR:
 
-			if(led_counter % 2 == 0)
+			if(led_counter % 2 == 1)
 			{
 				gpioLed0SetOn();
 			}
@@ -53,16 +66,12 @@ bool ble_timer_events(struct gecko_cmd_packet* evt)
 				gpioLed0SetOff();
 			}
 
-			if(led_counter > 1)
+			// Set one more blink if counter is out
+			if(led_counter == 1)
 			{
 				BTSTACK_CHECK_RESPONSE(gecko_cmd_hardware_set_soft_timer(TIMER_MS_2_TIMERTICK(450),
 																			TIMER_ID_LED_INDICATOR,
 							  												1));
-			}
-			else
-			{
-				// Make sure LED is off
-				gpioLed0SetOff();
 			}
 
 			led_counter--;

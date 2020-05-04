@@ -8,6 +8,8 @@
 #ifndef SRC_MAIN_H_
 #define SRC_MAIN_H_
 
+#include <math.h>
+
 /* Board headers */
 #include "init_mcu.h"
 #include "init_board.h"
@@ -48,6 +50,7 @@
 #include "ble_events.h"
 #include "bmp3.h"
 #include "pressure_sensor.h"
+#include "tracker.h"
 
 // Event bitmasks
 #define TIMER_EVENT_MASK			(0x0001)
@@ -74,5 +77,6 @@ struct imu_dev imu_dev;
 uint8_t sensors;
 struct bmp3_dev bmp_device;
 struct bmp3_data data;
+struct tracker_data position_data;
 
 #endif /* SRC_MAIN_H_ */

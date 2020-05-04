@@ -11,6 +11,7 @@
 #include "main.h"
 
 #define TIMER_ID_PEDOMETER_MODE				(0x02)
+#define TIMER_ID_PEDOMETER_50HZ				(0x04)
 #define TIMER_ID_FLIGHT_MODE				(0x03)
 #define TIMER_ID_LED_INDICATOR				(0x05)
 

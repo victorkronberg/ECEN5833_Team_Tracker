@@ -88,17 +88,17 @@
 #define		Z_AXIS_L				(5)
 
 // Compensation values
-#define		ACCEL_2G				(16384)
-#define		ACCEL_4G				(8192)
-#define		ACCEL_8G				(4096)
-#define		ACCEL_16G				(2048)
+#define		ACCEL_2G				(16384.0)
+#define		ACCEL_4G				(8192.0)
+#define		ACCEL_8G				(4096.0)
+#define		ACCEL_16G				(2048.0)
 
-#define		GYRO_250DPS_100X		(13107)
-#define		GYRO_500DPS_100X		(6554)
-#define		GYRO_1000DPS_100X		(3277)
-#define		GYRO_2000DPS_100X		(1638)
+#define		GYRO_250DPS_100X		(13107.0)
+#define		GYRO_500DPS_100X		(6554.0)
+#define		GYRO_1000DPS_100X		(3277.0)
+#define		GYRO_2000DPS_100X		(1638.0)
 
-#define		ROOM_TEMP_OFFSET		(21)
+#define		ROOM_TEMP_OFFSET		(21000)
 #define		TEMP_SENSITIVITY		(334)
 
 #define		TEMP_H					(0)
@@ -248,9 +248,9 @@ typedef struct{
 
 typedef struct{
 	uint8_t gyro;
-	uint32_t gyro_divisor[4];
+	float gyro_divisor[4];
 	uint8_t accel;
-	uint32_t accel_divisor[4];
+	float accel_divisor[4];
 } imu_full_scale_t;
 
 typedef struct{
