@@ -17,7 +17,7 @@ void tracker_enter_flight_mode(void)
 
 	position_data.air_pressure = (float) pressure_data.pressure/100.0;
 
-	altitude = ((( ( pow((position_data.air_pressure/101592),0.1902632365) )-1 ) * 290.15)/0.0065) * 3.28084;
+	altitude = ((( ( pow((position_data.air_pressure/101325),0.1902632365) )-1 ) * 298.15)/0.0065) * 3.28084;
 
 	position_data.starting_altitude = (altitude * -1);
 
@@ -35,7 +35,7 @@ void tracker_enter_pedometer_mode(void)
 
 	position_data.air_pressure = (float) pressure_data.pressure/100.0;
 
-	altitude = ((( ( pow((position_data.air_pressure/101592),0.1902632365) )-1 ) * 290.15)/0.0065) * 3.28084;
+	altitude = ((( ( pow((position_data.air_pressure/101325),0.1902632365) )-1 ) * 298.15)/0.0065) * 3.28084;
 
 	position_data.starting_altitude = (altitude * -1);
 
@@ -50,7 +50,7 @@ void tracker_update_altitude(void)
 
 	position_data.air_pressure = (float) pressure_data.pressure/100.0;
 
-	altitude = ((( ( pow((position_data.air_pressure/101592),0.1902632365) )-1 ) * 290.15)/0.0065) * 3.28084;
+	altitude = ((( ( pow((position_data.air_pressure/101325),0.1902632365) )-1 ) * 298.15)/0.0065) * 3.28084;
 
 	position_data.current_altitude = (altitude * -1);
 
@@ -151,10 +151,6 @@ uint32_t tracker_thresholding(float *y, int32_t *signals, int32_t lag, float thr
                 }
             } else {
                 signals[i] = -1;
-                if(signals[i-1]<=0 && stdFilter[i-1] > 100)
-				{
-					counter++;
-				}
             }
             filteredY[i] = influence * y[i] + (1 - influence) * filteredY[i-1];
         }
